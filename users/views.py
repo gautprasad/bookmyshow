@@ -6,40 +6,42 @@ from django.db import IntegrityError
 from .models import User
 import json
 
-@csrf_exempt
-@require_http_methods(["POST"])
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import RegisterSerializer, LoginSerializer
+
+@api_view(['POST'])
 def register(request):
-    try:
-        data = json.loads(request.body)
-        email = data.get('email')
-        name = data.get('name')
-        username = data.get('username')
-        password = data.get('password')
+    serializer = RegisterSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({'message': 'User registered successfully.'}, status=201)
+    return Response(serializer.errors, status=400)
 
-        if not email or not name or not username or not password:
-            return JsonResponse({'error': 'All fields are required.'}, status=400)
-
-        user = User(email=email, name=name, username=username, password=password)
-        user.save()
-        return JsonResponse({'message': 'User registered successfully.'}, status=201)
-    except IntegrityError:
-        return JsonResponse({'error': 'Email or username already exists.'}, status=400)
-    except ValidationError as e:
-        return JsonResponse({'error': str(e)}, status=400)
-    except Exception as e:
-        return JsonResponse({'error': 'Something went wrong.'}, status=500)
+@api_view(['POST'])
+def login(request):
+    serializer = LoginSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.validated_data['user']
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+        })
+    return Response(serializer.errors, status=401)
 
 @csrf_exempt
 @require_http_methods(["GET"])
 def get_users(request):
-    users = User.objects.all().values('user_id', 'email', 'name', 'username', 'is_event_manager')
+    users = User.objects.all().values('id', 'email', 'name', 'username', 'is_event_manager')
     return JsonResponse(list(users), safe=False)
 
 @csrf_exempt
 @require_http_methods(["GET"])
 def get_user_by_id(request, user_id):
     try:
-        user = User.objects.values('user_id', 'email', 'name', 'username', 'is_event_manager').get(user_id=user_id)
+        user = User.objects.values('id', 'email', 'name', 'username', 'is_event_manager').get(id=user_id)
         return JsonResponse(user, safe=False)
     except User.DoesNotExist:
         return HttpResponseNotFound({'error': 'User not found.'})
