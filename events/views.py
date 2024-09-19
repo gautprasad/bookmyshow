@@ -1,6 +1,8 @@
 from rest_framework import generics, permissions
 from .models import Event
 from .serializers import EventSerializerPost, EventSerializerGet
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import EventFilter
 
 class IsEventManager(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -14,6 +16,12 @@ class CreateEventView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
+# class EventListView(generics.ListAPIView):
+#     queryset = Event.objects.all()
+#     serializer_class = EventSerializerGet
+
 class EventListView(generics.ListAPIView):
     queryset = Event.objects.all()
     serializer_class = EventSerializerGet
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = EventFilter
