@@ -1,6 +1,7 @@
 from django.urls import path
-from . import views
+from .views import CreateEventView, EventListView
 
 urlpatterns = [
-    path('', views.index, name='events-index'),
+    path('create-event/', CreateEventView.as_view(), name='create-event'),
+    path('all-events/', EventListView.as_view(), name='event-list'),
 ]

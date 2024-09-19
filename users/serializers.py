@@ -5,14 +5,15 @@ from django.contrib.auth import authenticate
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('email', 'password', 'name')
+        fields = ('email', 'password', 'name', 'is_event_manager')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         user = User.objects.create_user(
             email=validated_data['email'],
             password=validated_data['password'],
-            name=validated_data['name']
+            name=validated_data['name'],
+            is_event_manager=validated_data['is_event_manager']
         )
         return user
 
