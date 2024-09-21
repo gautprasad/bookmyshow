@@ -30,25 +30,21 @@ def make_payment(request):
         except Booking.DoesNotExist:
             return Response({"error": "Booking not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Validate booking status
         if booking.status != 'reserved':
             return Response({"error": "Booking status must be 'reserved' to make a payment."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Validate the amount
         expected_amount = booking.number_of_tickets * booking.event.cost_per_ticket
         if amount != expected_amount:
             return Response({"error": "Not a valid payment amount."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Simulate payment creation
         payment = Payment.objects.create(
-            user=request.user,  # Assuming Payment model has a user field
+            user=request.user,
             booking=booking,
             mode_of_payment=mode_of_payment,
             amount=amount,
-            status='completed'  # Assuming 'completed' is a valid status for a successful payment
+            status='completed'
         )
 
-        # Update booking status and payment ID
         booking.status = 'booked'
         booking.payment = payment
         booking.save()

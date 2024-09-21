@@ -30,14 +30,6 @@ class BookTicketSerializer(serializers.ModelSerializer):
         
         return data
 
-# class BookingSerializer(serializers.ModelSerializer):
-#     event = serializers.StringRelatedField()
-#     user = serializers.StringRelatedField()
-
-#     class Meta:
-#         model = Booking
-#         fields = ['id', 'user', 'event', 'number_of_tickets', 'status', 'created_at', 'updated_at']
-
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event

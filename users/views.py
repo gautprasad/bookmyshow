@@ -60,13 +60,10 @@ class DeleteUserView(APIView):
 
     def delete(self, request):
         try:
-            # Extract the user ID from the token
             user_id = request.user.id
 
-            # Get the user object
             user = User.objects.get(id=user_id)
 
-            # Delete the user
             user.delete()
 
             return Response({'message': 'User deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
