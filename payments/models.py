@@ -19,7 +19,7 @@ class Payment(models.Model):
         ('failed', 'Failed'),
         ('refunded', 'Refunded'),
     ]
-
+    
     user = models.ForeignKey(
         User, 
         on_delete=models.CASCADE,

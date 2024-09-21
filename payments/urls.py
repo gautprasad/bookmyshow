@@ -1,6 +1,7 @@
 from django.urls import path
-from . import views
+from .views import make_payment, revert_payment
 
 urlpatterns = [
-    path('', views.index, name='payments-index'),
+    path('make-payment/', make_payment, name='make-payment'),
+    path('revert-payment/<int:payment_id>/', revert_payment, name='revert-payment'),
 ]

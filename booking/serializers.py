@@ -41,7 +41,7 @@ class BookTicketSerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ['id', 'title', 'description', 'date', 'time', 'status', 'location', 'category', 'payment_options', 'cost_per_ticket']
+        fields = ['id', 'title', 'description', 'date', 'time', 'event_status', 'location', 'category', 'payment_options', 'cost_per_ticket']
 
 class BookingSerializer(serializers.ModelSerializer):
     event = EventSerializer()

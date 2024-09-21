@@ -1,10 +1,10 @@
+import requests
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Booking
 from .serializers import BookTicketSerializer, BookingSerializer
-from events.models import Event
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -34,6 +34,7 @@ def view_bookings_user(request):
     serializer = BookingSerializer(bookings, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def cancel_booking(request, booking_id):
@@ -48,8 +49,16 @@ def cancel_booking(request, booking_id):
     booking.status = 'canceled'
     booking.save()
 
-    # Restore the tickets to the event
     booking.event.available_tickets += booking.number_of_tickets
     booking.event.save()
 
-    return Response({"message": "Booking canceled successfully."}, status=status.HTTP_200_OK)
+
+    revert_payment_url = 'http://localhost:8000/payments/revert-payment/'
+    revert_payment_data = {'booking_id': booking.id}
+    headers = {'Authorization': f'Token {request.auth}'}
+    revert_payment_response = requests.post(revert_payment_url, json=revert_payment_data, headers=headers)
+
+    if revert_payment_response.status_code != status.HTTP_200_OK:
+        return Response({"error": "Failed to revert payment."}, status=revert_payment_response.status_code)
+
+    return Response({"message": "Booking canceled and payment reverted successfully."}, status=status.HTTP_200_OK)
