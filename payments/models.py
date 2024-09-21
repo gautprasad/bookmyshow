@@ -1,7 +1,8 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 from users.models import User
 
-# Create your models here.
 class Payment(models.Model):
     MODE_OF_PAYMENT_CHOICES = [
         ('credit_card', 'Credit Card'),
@@ -19,12 +20,62 @@ class Payment(models.Model):
         ('refunded', 'Refunded'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_id = models.CharField(max_length=255, unique=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
-    created_at = models.DateTimeField(auto_now_add=True)
-    mode_of_payment = models.CharField(max_length=20, choices=MODE_OF_PAYMENT_CHOICES)
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE,
+        error_messages={
+            'null': "User cannot be null.",
+        }
+    )
+    amount = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        validators=[MinValueValidator(0.01, message="Amount must be greater than zero.")],
+        error_messages={
+            'invalid': "Enter a valid amount.",
+            'null': "Amount cannot be null.",
+            'blank': "Amount cannot be blank.",
+        }
+    )
+    payment_id = models.CharField(
+        max_length=255, 
+        unique=True,
+        error_messages={
+            'unique': "Payment ID must be unique.",
+            'blank': "Payment ID cannot be blank.",
+            'null': "Payment ID cannot be null.",
+            'max_length': "Payment ID cannot exceed 255 characters.",
+        }
+    )
+    status = models.CharField(
+        max_length=20, 
+        choices=STATUS_CHOICES,
+        error_messages={
+            'invalid_choice': "Enter a valid status.",
+            'null': "Status cannot be null.",
+            'blank': "Status cannot be blank.",
+        }
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        error_messages={
+            'invalid': "Enter a valid creation date.",
+        }
+    )
+    mode_of_payment = models.CharField(
+        max_length=20, 
+        choices=MODE_OF_PAYMENT_CHOICES,
+        error_messages={
+            'invalid_choice': "Enter a valid mode of payment.",
+            'null': "Mode of payment cannot be null.",
+            'blank': "Mode of payment cannot be blank.",
+        }
+    )
+
+    def clean(self):
+        super().clean()
+        if self.amount <= 0:
+            raise ValidationError({'amount': "Amount must be greater than zero."})
 
     def __str__(self):
         return f"{self.user.username} - {self.payment_id} - {self.status}"
