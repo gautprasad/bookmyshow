@@ -39,14 +39,14 @@ def login(request):
 @csrf_exempt
 @require_http_methods(["GET"])
 def get_users(request):
-    users = User.objects.all().values('id', 'email', 'name', 'is_event_manager')
+    users = User.objects.all().values('id', 'email', 'username', 'name', 'is_event_manager')
     return JsonResponse(list(users), safe=False)
 
 @csrf_exempt
 @require_http_methods(["GET"])
 def get_user_by_id(request, user_id):
     try:
-        user = User.objects.values('id', 'email', 'name', 'is_event_manager').get(id=user_id)
+        user = User.objects.values('id', 'email', 'name', 'username', 'is_event_manager').get(id=user_id)
         return JsonResponse(user, safe=False)
     except User.DoesNotExist:
         return HttpResponseNotFound({'error': 'User not found.'})

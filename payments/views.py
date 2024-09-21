@@ -4,7 +4,17 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Payment
 from booking.models import Booking
-from .serializers import MakePaymentSerializer, RevertPaymentSerializer
+from .serializers import MakePaymentSerializer, PaymentSerializer
+from django.db import transaction
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_payments(request):
+    payments = Payment.objects.all()
+    serializer = PaymentSerializer(payments, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -43,7 +53,7 @@ def make_payment(request):
         booking.payment = payment
         booking.save()
 
-        return Response({"message": "Payment successful.", "payment_id": payment.id}, status=status.HTTP_200_OK)
+        return Response({"message": "Payment successful.", "payment id": payment.id}, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -59,19 +69,22 @@ def revert_payment(request, payment_id):
     if payment.status != 'completed':
         return Response({"error": "Payment status must be 'completed' to revert."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Update payment status to 'refunded'
-    payment.status = 'refunded'
-    payment.save()
-
-    # Fetch booking using payment_id and update its status
     try:
-        booking = Booking.objects.get(payment=payment)
-    except Booking.DoesNotExist:
-        return Response({"error": "Booking not found."}, status=status.HTTP_404_NOT_FOUND)
+        with transaction.atomic():
+            payment.status = 'refunded'
+            payment.save()
 
-    if booking.status == 'booked':
-        booking.status = 'reserved'
-        booking.payment = None
-        booking.save()
+            try:
+                booking = Booking.objects.get(payment=payment)
+            except Booking.DoesNotExist:
+                return Response({"error": "Booking not found."}, status=status.HTTP_404_NOT_FOUND)
+
+            if booking.status == 'booked':
+                booking.status = 'reserved'
+                booking.payment = None
+                booking.save()
+
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     return Response({"message": "Payment reverted and booking updated successfully."}, status=status.HTTP_200_OK)

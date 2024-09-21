@@ -37,16 +37,6 @@ class Payment(models.Model):
             'blank': "Amount cannot be blank.",
         }
     )
-    payment_id = models.CharField(
-        max_length=255, 
-        unique=True,
-        error_messages={
-            'unique': "Payment ID must be unique.",
-            'blank': "Payment ID cannot be blank.",
-            'null': "Payment ID cannot be null.",
-            'max_length': "Payment ID cannot exceed 255 characters.",
-        }
-    )
     status = models.CharField(
         max_length=20, 
         choices=STATUS_CHOICES,
@@ -78,4 +68,4 @@ class Payment(models.Model):
             raise ValidationError({'amount': "Amount must be greater than zero."})
 
     def __str__(self):
-        return f"{self.user.username} - {self.payment_id} - {self.status}"
+        return f"{self.user.username} - {self.id} - {self.status}"

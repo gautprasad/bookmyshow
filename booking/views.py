@@ -46,19 +46,18 @@ def cancel_booking(request, booking_id):
     if booking.status == 'canceled':
         return Response({"error": "Booking is already canceled."}, status=status.HTTP_400_BAD_REQUEST)
 
+    if booking.status != 'booked':
+        return Response({"error": "Booking status must be 'booked' to cancel."}, status=status.HTTP_400_BAD_REQUEST)
+
     booking.status = 'canceled'
     booking.save()
 
     booking.event.available_tickets += booking.number_of_tickets
     booking.event.save()
-
-
-    revert_payment_url = 'http://localhost:8000/payments/revert-payment/'
-    revert_payment_data = {'booking_id': booking.id}
-    headers = {'Authorization': f'Token {request.auth}'}
-    revert_payment_response = requests.post(revert_payment_url, json=revert_payment_data, headers=headers)
-
-    if revert_payment_response.status_code != status.HTTP_200_OK:
-        return Response({"error": "Failed to revert payment."}, status=revert_payment_response.status_code)
+    
+    if booking.payment is not None:
+        payment = booking.payment
+        payment.status = 'refunded'
+        payment.save()
 
     return Response({"message": "Booking canceled and payment reverted successfully."}, status=status.HTTP_200_OK)
