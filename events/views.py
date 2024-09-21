@@ -50,7 +50,6 @@ def cancel_event(request, event_id):
             for booking in bookings:
                 if booking.status == 'booked' and booking.payment:
                     try:
-                        print('booking.payment', booking.payment.id)
                         payment = Payment.objects.get(id=booking.payment.id)
                         payment.status = 'refunded'
                         payment.save()
