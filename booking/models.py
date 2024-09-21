@@ -10,6 +10,7 @@ class Booking(models.Model):
         ('reserved', 'Reserved'),
         ('booked', 'Booked'),
         ('canceled', 'Canceled'),
+        ('event_canceled', 'Event Canceled'),
     ]
 
     user = models.ForeignKey(
@@ -44,7 +45,7 @@ class Booking(models.Model):
         }
     )
     status = models.CharField(
-        max_length=10, 
+        max_length=30, 
         choices=STATUS_CHOICES, 
         default='reserved',
         error_messages={

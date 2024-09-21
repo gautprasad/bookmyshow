@@ -2,24 +2,50 @@ from rest_framework import serializers
 from .models import Booking
 from events.models import Event
 
+from rest_framework import serializers
+from .models import Booking
+from events.models import Event
+
 class BookTicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
-        fields = ['event', 'number_of_tickets']
+        fields = ['event', 'number_of_tickets', 'status']
+        extra_kwargs = {
+            'status': {'read_only': True}
+        }
+
+    def validate_number_of_tickets(self, value):
+        if value < 1:
+            raise serializers.ValidationError("Number of tickets must be at least 1.")
+        return value
 
     def validate(self, data):
-        event = data.get('event')
-        number_of_tickets = data.get('number_of_tickets')
-
-        if event.available_tickets < number_of_tickets:
+        user = self.context['request'].user
+        if user.is_event_manager:
+            raise serializers.ValidationError("Event managers cannot book tickets.")
+        
+        event = data['event']
+        if event.available_tickets < data['number_of_tickets']:
             raise serializers.ValidationError("Not enough tickets available.")
-
+        
         return data
 
+# class BookingSerializer(serializers.ModelSerializer):
+#     event = serializers.StringRelatedField()
+#     user = serializers.StringRelatedField()
+
+#     class Meta:
+#         model = Booking
+#         fields = ['id', 'user', 'event', 'number_of_tickets', 'status', 'created_at', 'updated_at']
+
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = ['id', 'title', 'description', 'date', 'time', 'status', 'location', 'category', 'payment_options', 'cost_per_ticket']
+
 class BookingSerializer(serializers.ModelSerializer):
-    event = serializers.StringRelatedField()
-    user = serializers.StringRelatedField()
+    event = EventSerializer()
 
     class Meta:
         model = Booking
-        fields = ['id', 'user', 'event', 'number_of_tickets', 'payment_details', 'status', 'created_at', 'updated_at']
+        fields = '__all__'

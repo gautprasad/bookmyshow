@@ -43,7 +43,7 @@ class EventSerializerGet(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ['id', 'title', 'description', 'date', 'time', 'location', 'category', 'payment_options', 'created_by', 'total_number_tickets', 'cost_per_ticket']
+        fields = ['id', 'title', 'description', 'date', 'time', 'location', 'category', 'payment_options', 'created_by', 'total_number_tickets', 'cost_per_ticket', 'available_tickets']
 
 class EventSerializerPost(serializers.ModelSerializer):
     class Meta:

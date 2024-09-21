@@ -8,8 +8,8 @@ from events.models import Event
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def book_ticket(request):
-    serializer = BookTicketSerializer(data=request.data)
+def reserve_ticket(request):
+    serializer = BookTicketSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
         event = serializer.validated_data['event']
         number_of_tickets = serializer.validated_data['number_of_tickets']
@@ -29,12 +29,12 @@ def book_ticket(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def view_bookings(request):
+def view_bookings_user(request):
     bookings = Booking.objects.filter(user=request.user)
     serializer = BookingSerializer(bookings, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-@api_view(['POST'])
+@api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def cancel_booking(request, booking_id):
     try:
