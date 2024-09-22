@@ -46,18 +46,15 @@ def cancel_booking(request, booking_id):
     if booking.status == 'canceled':
         return Response({"error": "Booking is already canceled."}, status=status.HTTP_400_BAD_REQUEST)
 
-    if booking.status != 'booked':
-        return Response({"error": "Booking status must be 'booked' to cancel."}, status=status.HTTP_400_BAD_REQUEST)
-
-    booking.status = 'canceled'
-    booking.save()
-
     booking.event.available_tickets += booking.number_of_tickets
     booking.event.save()
     
-    if booking.payment is not None:
+    if booking.payment is not None and booking.status == 'booked':
         payment = booking.payment
         payment.status = 'refunded'
         payment.save()
+        
+    booking.status = 'canceled'
+    booking.save()
 
     return Response({"message": "Booking canceled and payment reverted successfully."}, status=status.HTTP_200_OK)
