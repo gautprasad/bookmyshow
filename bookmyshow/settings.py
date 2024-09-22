@@ -186,3 +186,4 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'Your email@gmail.com'  # Your email address
 EMAIL_HOST_PASSWORD = 'Your password'  # Your email password
 DEFAULT_FROM_EMAIL = 'Your email@gmail.com'
+EMAIL_USE_SSL = False
