@@ -1,0 +1,16 @@
+[run]
+omit =
+    */migrations/*
+    */tests/*
+    */settings/*
+    */wsgi.py
+    */asgi.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __str__
+    if self.debug:
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
