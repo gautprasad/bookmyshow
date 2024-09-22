@@ -65,7 +65,6 @@ class BookingURLsTests(TestCase):
         booking_id = reserve_response.json().get('booking_id')
         cancel_url = reverse('cancel_booking', args=[booking_id])
         response = self.client.put(cancel_url, HTTP_AUTHORIZATION='Bearer ' + self.token)
-        print(cancel_url, response.json())
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 

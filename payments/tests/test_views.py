@@ -109,7 +109,6 @@ class PaymentViewsTests(TestCase):
     def test_revert_payment_success(self):
         revert_payment_url = reverse('revert_payment', args=[self.payment.id])
         response = self.client.put(revert_payment_url, format='json', HTTP_AUTHORIZATION='Bearer ' + self.token)
-        print(response)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['message'], 'Payment reverted and booking updated successfully.')
 
