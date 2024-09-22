@@ -27,6 +27,8 @@ class BookTicketSerializer(serializers.ModelSerializer):
         event = data['event']
         if event.available_tickets < data['number_of_tickets']:
             raise serializers.ValidationError("Not enough tickets available.")
+        if event.event_status != 'scheduled':
+            raise serializers.ValidationError("Ticket cannot be booked for this event.")
         
         return data
 
